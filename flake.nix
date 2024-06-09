@@ -79,6 +79,18 @@
           ];
 
           LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
+
+          resources = pkgs.lib.fileset.toSource {
+            root = ./resources;
+            fileset = ./resources;
+          };
+          postInstall = ''
+            install -D $resources/niri-session $out/bin
+            install -D $resources/niri.desktop $out/share/wayland-sessions/niri.desktop
+            install -D $resources/niri-portals.conf $out/share/wayland-sessions/niri-portals.conf
+            install -D $resources/niri.service $out/lib/systemd/user/niri.service
+            install -D $resources/niri-shutdown.target $out/lib/systemd/user/niri-shutdown.target
+          '';
         };
 
         cargoArtifacts = craneLib.buildDepsOnly craneArgs;
