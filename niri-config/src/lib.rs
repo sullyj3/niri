@@ -1026,6 +1026,8 @@ pub struct Animations {
     #[knuffel(child, default)]
     pub workspace_switch: WorkspaceSwitchAnim,
     #[knuffel(child, default)]
+    pub workspace_move: WorkspaceMovementAnim,
+    #[knuffel(child, default)]
     pub window_open: WindowOpenAnim,
     #[knuffel(child, default)]
     pub window_close: WindowCloseAnim,
@@ -1049,6 +1051,7 @@ impl Default for Animations {
             off: false,
             slowdown: 1.,
             workspace_switch: Default::default(),
+            workspace_move: Default::default(),
             horizontal_view_movement: Default::default(),
             window_movement: Default::default(),
             window_open: Default::default(),
@@ -1074,6 +1077,21 @@ impl Default for WorkspaceSwitchAnim {
                 epsilon: 0.0001,
             }),
         })
+    }
+}
+
+impl<S> knuffel::Decode<S> for WorkspaceMovementAnim
+where
+    S: knuffel::traits::ErrorSpan,
+{
+    fn decode_node(
+        node: &knuffel::ast::SpannedNode<S>,
+        ctx: &mut knuffel::decode::Context<S>
+    ) -> Result<Self, DecodeError<S>> {
+        let default = Self::default().0;
+        Ok(Self(Animation::decode_node(node, ctx, default, |_, _| {
+            Ok(false)
+        })?))
     }
 }
 
@@ -1139,6 +1157,22 @@ impl Default for HorizontalViewMovementAnim {
 pub struct WindowMovementAnim(pub Animation);
 
 impl Default for WindowMovementAnim {
+    fn default() -> Self {
+        Self(Animation {
+            off: false,
+            kind: AnimationKind::Spring(SpringParams {
+                damping_ratio: 1.,
+                stiffness: 800,
+                epsilon: 0.0001,
+            }),
+        })
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct WorkspaceMovementAnim(pub Animation);
+
+impl Default for WorkspaceMovementAnim {
     fn default() -> Self {
         Self(Animation {
             off: false,
